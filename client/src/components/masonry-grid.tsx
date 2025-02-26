@@ -6,6 +6,8 @@ interface MasonryGridProps {
     id: string;
     url: string;
     title: string;
+    isPremium?: boolean;
+    isCoins?: boolean;
   }>;
   columnWidth?: number;
   gap?: number;
@@ -35,10 +37,11 @@ export default function MasonryGrid({
   const columnHeights = Array(columns).fill(0);
   const columnItems = Array(columns).fill(0).map(() => []);
 
-  images.forEach((image, i) => {
+  images.forEach((image) => {
     const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
-    columnItems[shortestColumn].push(image);
-    columnHeights[shortestColumn] += 300 + Math.random() * 200; // Random height for variety
+    const randomHeight = 200 + Math.floor(Math.random() * 150); // 200-350px
+    columnItems[shortestColumn].push({ ...image, randomHeight });
+    columnHeights[shortestColumn] += randomHeight + gap;
   });
 
   return (
@@ -54,7 +57,11 @@ export default function MasonryGrid({
       {columnItems.map((column, i) => (
         <div key={i} className="flex flex-col gap-4">
           {column.map((image) => (
-            <WallpaperCard key={image.id} image={image} />
+            <WallpaperCard 
+              key={image.id} 
+              image={image}
+              height={image.randomHeight}
+            />
           ))}
         </div>
       ))}

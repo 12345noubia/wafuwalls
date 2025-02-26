@@ -2,11 +2,32 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MasonryGrid from "@/components/masonry-grid";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
+
+interface Image {
+  id: string;
+  url: string;
+  title: string;
+  isPremium?: boolean;
+  isCoins?: boolean;
+}
+
+function randomizeItem(item: any): Image {
+  const isPremium = Math.random() < 0.2;
+  const isCoins = Math.random() < 0.15;
+
+  return {
+    id: item.image_id,
+    url: item.url,
+    title: item.tags?.[0]?.name || "Beautiful Wallpaper",
+    isPremium,
+    isCoins,
+  };
+}
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -16,15 +37,14 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${query}&per_page=30&client_id=${import.meta.env.VITE_UNSPLASH_KEY}`
+        `https://api.waifu.im/search/?included_tags=${query}&many=true&amount=20`
       );
       const data = await response.json();
-      const searchResults = data.results.map((item: any) => ({
-        id: item.id,
-        url: item.urls.regular,
-        title: item.alt_description || "Untitled",
-      }));
-      setImages(searchResults);
+
+      if (data.images) {
+        const searchResults = data.images.map(randomizeItem);
+        setImages(searchResults);
+      }
     } catch (error) {
       console.error("Search failed:", error);
     } finally {
@@ -41,10 +61,17 @@ export default function SearchPage() {
             placeholder="Search wallpapers..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            className="flex-1"
           />
           <Button type="submit" disabled={loading}>
-            <Search className="h-5 w-5 mr-2" />
-            Search
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <Search className="h-5 w-5 mr-2" />
+                Search
+              </>
+            )}
           </Button>
         </form>
       </div>
