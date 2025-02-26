@@ -9,30 +9,29 @@ interface MasonryGridProps {
     isPremium?: boolean;
     isCoins?: boolean;
   }>;
-  columnWidth?: number;
   gap?: number;
 }
 
 export default function MasonryGrid({
   images,
-  columnWidth = 300,
-  gap = 16,
+  gap = 8,
 }: MasonryGridProps) {
+  const [columns, setColumns] = useState(2); // Default to 2 columns for mobile
   const containerRef = useRef<HTMLDivElement>(null);
-  const [columns, setColumns] = useState(1);
 
   useEffect(() => {
     const updateColumns = () => {
       if (!containerRef.current) return;
-      const containerWidth = containerRef.current.offsetWidth;
-      const newColumns = Math.max(1, Math.floor(containerWidth / (columnWidth + gap)));
+      const width = containerRef.current.offsetWidth;
+      // Use 2 columns for mobile, 3 for larger screens
+      const newColumns = width > 768 ? 3 : 2;
       setColumns(newColumns);
     };
 
     updateColumns();
     window.addEventListener("resize", updateColumns);
     return () => window.removeEventListener("resize", updateColumns);
-  }, [columnWidth, gap]);
+  }, []);
 
   const columnHeights = Array(columns).fill(0);
   const columnItems = Array(columns).fill(0).map(() => []);
@@ -47,7 +46,7 @@ export default function MasonryGrid({
   return (
     <div
       ref={containerRef}
-      className="w-full"
+      className="w-full pb-24" // Add padding for floating navbar
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
@@ -55,7 +54,7 @@ export default function MasonryGrid({
       }}
     >
       {columnItems.map((column, i) => (
-        <div key={i} className="flex flex-col gap-4">
+        <div key={i} className="flex flex-col gap-2">
           {column.map((image) => (
             <WallpaperCard 
               key={image.id} 

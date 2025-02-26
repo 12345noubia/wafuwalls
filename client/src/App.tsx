@@ -13,8 +13,7 @@ import Navbar from "@/components/navbar";
 
 function Router() {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="min-h-screen bg-background dark">
       <Switch>
         <Route path="/auth" component={AuthPage} />
         <ProtectedRoute path="/" component={HomePage} />
@@ -22,6 +21,7 @@ function Router() {
         <ProtectedRoute path="/search" component={SearchPage} />
         <Route component={NotFound} />
       </Switch>
+      <Navbar />
     </div>
   );
 }
