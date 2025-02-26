@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -10,8 +11,15 @@ import HomePage from "@/pages/home-page";
 import FavoritesPage from "@/pages/favorites-page";
 import SearchPage from "@/pages/search-page";
 import Navbar from "@/components/navbar";
+import SplashScreen from "@/components/splash-screen";
 
 function Router() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background dark">
       <Switch>

@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import MasonryGrid from "@/components/masonry-grid";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface Image {
@@ -27,10 +26,13 @@ function randomizeItem(item: any): Image {
 
 export default function HomePage() {
   const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   const fetchImages = async () => {
+    if (loading) return;
+
     try {
       setLoading(true);
       const url = `https://api.waifu.im/search/?included_tags=waifu&many=true&amount=10&exclude_tags=nsfw&ts=${Date.now()}`;
@@ -40,6 +42,7 @@ export default function HomePage() {
       if (data.images) {
         const newImages = data.images.map(randomizeItem);
         setImages((prev) => [...prev, ...newImages]);
+        setPage((p) => p + 1);
       }
     } catch (error) {
       console.error("Failed to fetch images:", error);
@@ -48,31 +51,31 @@ export default function HomePage() {
     }
   };
 
+  // Intersection Observer for infinite scrolling
+  const observer = useRef<IntersectionObserver>();
+  const lastImageRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        fetchImages();
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, [loading]);
+
   useEffect(() => {
     fetchImages();
-  }, [page]);
+  }, []); // Initial load
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">Discover Wallpapers</h1>
-
       <MasonryGrid images={images} />
-
-      <div className="flex justify-center mt-8">
-        <Button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={loading}
-          size="lg"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading...
-            </>
-          ) : (
-            "Load More"
-          )}
-        </Button>
+      <div ref={lastImageRef} className="h-10 flex items-center justify-center">
+        {loading && <Loader2 className="h-6 w-6 animate-spin" />}
       </div>
     </div>
   );
