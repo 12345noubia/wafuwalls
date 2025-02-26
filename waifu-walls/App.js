@@ -1,4 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import mobileAds from 'react-native-google-mobile-ads';
+
+// Initialize mobile ads
+mobileAds()
+  .initialize()
+  .then(adapterStatuses => {
+    console.log('Initialization complete!');
+  });
 import {
   View,
   Text,
